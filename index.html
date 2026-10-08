@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<title>Séminaires MF-IDF</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #f4f6f8; }
+  iframe { display: block; border: 0; width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<!--
+  Page relais : affiche la web app dans un cadre. Dans un cadre venu d'un autre site,
+  Safari n'envoie pas les cookies Google (et Chrome non plus grâce à `credentialless`),
+  ce qui évite le bug des comptes multiples (/macros/u/1/… « Impossible d'ouvrir le fichier »).
+  Aucun secret ici : le jeton arrive dans l'adresse de cette page et est transmis au cadre.
+-->
+<iframe id="appli" title="Séminaires MF-IDF" credentialless allow="clipboard-write"></iframe>
+<script>
+  var WEB_APP = 'https://script.google.com/macros/s/AKfycbz2UNNJclcFtpuIjcyrc48ED18sReg1uDxyOqhqov5f42n85x76KuCMnNdugtRBMcc5/exec';
+  // Paramètres acceptés dans la requête (?t=…&page=…) ou le fragment (#t=…).
+  var params = new URLSearchParams(location.search);
+  new URLSearchParams(location.hash.replace(/^#/, '')).forEach(function (v, k) { params.set(k, v); });
+  var transmis = new URLSearchParams();
+  ['t', 'page', 's'].forEach(function (k) { if (params.has(k)) transmis.set(k, params.get(k)); });
+  var q = transmis.toString();
+  document.getElementById('appli').src = WEB_APP + (q ? '?' + q : '');
+</script>
+</body>
+</html>
