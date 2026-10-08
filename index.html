@@ -16,17 +16,17 @@
   Safari n'envoie pas les cookies Google (blocage des cookies tiers),
   ce qui évite le bug des comptes multiples (/macros/u/1/… « Impossible d'ouvrir le fichier »).
   Ne pas ajouter `credentialless` : Chrome ne charge plus alors la web app Apps Script.
-  Aucun secret ici : le jeton arrive dans l'adresse de cette page et est transmis au cadre.
+  Aucun secret dans cette page. Le jeton personnel arrive dans le fragment de l'adresse (#t=…), que le navigateur
+  n'envoie jamais à GitHub : il n'est donc pas dans ses journaux. Il est transmis uniquement au cadre, donc à Google.
 -->
 <iframe id="appli" title="Séminaires MF-IDF" allow="clipboard-write"></iframe>
 <script>
   var WEB_APP = 'https://script.google.com/macros/s/AKfycbz2UNNJclcFtpuIjcyrc48ED18sReg1uDxyOqhqov5f42n85x76KuCMnNdugtRBMcc5/exec';
-  // Paramètres acceptés dans la requête (?t=…&page=…) ou le fragment (#t=…).
+  // Tous les paramètres de la requête (?t=…&page=…&…) et du fragment (#t=…) sont transmis tels quels au cadre :
+  // les futurs liens (annulation, etc.) passent sans retoucher cette page. Le fragment l'emporte sur la requête.
   var params = new URLSearchParams(location.search);
   new URLSearchParams(location.hash.replace(/^#/, '')).forEach(function (v, k) { params.set(k, v); });
-  var transmis = new URLSearchParams();
-  ['t', 'page', 's'].forEach(function (k) { if (params.has(k)) transmis.set(k, params.get(k)); });
-  var q = transmis.toString();
+  var q = params.toString();
   document.getElementById('appli').src = WEB_APP + (q ? '?' + q : '');
 </script>
 </body>
