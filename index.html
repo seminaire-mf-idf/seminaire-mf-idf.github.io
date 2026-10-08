@@ -13,11 +13,12 @@
 <body>
 <!--
   Page relais : affiche la web app dans un cadre. Dans un cadre venu d'un autre site,
-  Safari n'envoie pas les cookies Google (et Chrome non plus grâce à `credentialless`),
+  Safari n'envoie pas les cookies Google (blocage des cookies tiers),
   ce qui évite le bug des comptes multiples (/macros/u/1/… « Impossible d'ouvrir le fichier »).
+  Ne pas ajouter `credentialless` : Chrome ne charge plus alors la web app Apps Script.
   Aucun secret ici : le jeton arrive dans l'adresse de cette page et est transmis au cadre.
 -->
-<iframe id="appli" title="Séminaires MF-IDF" credentialless allow="clipboard-write"></iframe>
+<iframe id="appli" title="Séminaires MF-IDF" allow="clipboard-write"></iframe>
 <script>
   var WEB_APP = 'https://script.google.com/macros/s/AKfycbz2UNNJclcFtpuIjcyrc48ED18sReg1uDxyOqhqov5f42n85x76KuCMnNdugtRBMcc5/exec';
   // Paramètres acceptés dans la requête (?t=…&page=…) ou le fragment (#t=…).
