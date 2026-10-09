@@ -6,8 +6,31 @@
 <meta name="referrer" content="no-referrer">
 <title>Séminaires MF-IDF</title>
 <style>
-  html, body { margin: 0; height: 100%; background: #f4f6f8; }
+  :root { --fond: #f4f6f8; --texte: #1b2230; --discret: #566074; --accent: #1d5fb8; }
+  @media (prefers-color-scheme: dark) { :root { --fond: #11151c; --texte: #eceff4; --discret: #a3adbf; --accent: #6aa4f5; } }
+  html, body { margin: 0; height: 100%; background: var(--fond); }
+  [hidden] { display: none !important; }
   iframe { display: block; border: 0; width: 100%; height: 100%; }
+  /* Écran de départ : visible dès le premier affichage, retiré quand le cadre a chargé. */
+  #chargement {
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px; text-align: center; background: var(--fond); color: var(--texte);
+    font: 17px/1.4 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+  #chargement h1 { font-size: 1.4rem; margin: 0 0 16px; }
+  #chargement p { margin: 0 0 12px; }
+  #chargement .attente { display: flex; align-items: center; gap: 12px; color: var(--discret); }
+  #lent { max-width: 22em; }
+  #lent button {
+    display: block; margin: 12px auto 0; min-height: 48px; padding: 10px 24px; font: inherit; font-weight: 600; cursor: pointer;
+    border: 1px solid var(--accent); border-radius: 12px; background: var(--accent); color: var(--fond);
+  }
+  .tourne {
+    display: inline-block; width: 1.1em; height: 1.1em; border: 3px solid currentColor; border-right-color: transparent;
+    border-radius: 50%; animation: tourne 0.8s linear infinite;
+  }
+  @keyframes tourne { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .tourne { animation: none; border-right-color: currentColor; opacity: 0.6; } }
 </style>
 </head>
 <body>
@@ -19,6 +42,11 @@
   Aucun secret dans cette page. Le jeton personnel arrive dans le fragment de l'adresse (#t=…), que le navigateur
   n'envoie jamais à GitHub : il n'est donc pas dans ses journaux. Il est transmis uniquement au cadre, donc à Google.
 -->
+<div id="chargement" role="status">
+  <h1>Séminaires MF-IDF</h1>
+  <p class="attente"><span class="tourne" aria-hidden="true"></span><span id="etat-chargement">Chargement…</span></p>
+  <p id="lent" hidden>Le chargement est long. Vérifiez votre connexion, puis <button id="reessayer" type="button">Réessayer</button></p>
+</div>
 <iframe id="appli" title="Séminaires MF-IDF" allow="clipboard-write"></iframe>
 <script>
   var WEB_APP = 'https://script.google.com/macros/s/AKfycbz2UNNJclcFtpuIjcyrc48ED18sReg1uDxyOqhqov5f42n85x76KuCMnNdugtRBMcc5/exec';
@@ -27,7 +55,26 @@
   var params = new URLSearchParams(location.search);
   new URLSearchParams(location.hash.replace(/^#/, '')).forEach(function (v, k) { params.set(k, v); });
   var q = params.toString();
-  document.getElementById('appli').src = WEB_APP + (q ? '?' + q : '');
+  var cadre = document.getElementById('appli');
+  // L'écran de départ couvre le cadre jusqu'au message de la web app (« mfidf:pret », envoyé à son premier rendu) : l'événement
+  // `load` du cadre ne correspond qu'à la coquille d'Apps Script, pas à notre page. Il passe seulement le texte à « Ouverture… »
+  // (et le `load` de l'about:blank initial, avant que `src` soit posé, est ignoré). Sans message en 20 s, on propose de réessayer.
+  var ecran = document.getElementById('chargement');
+  var lent = document.getElementById('lent');
+  var texte = document.getElementById('etat-chargement');
+  var delai = setTimeout(function () { lent.hidden = false; }, 20000);
+  var ORIGINES = /^(https:\/\/([a-z0-9-]+\.)*googleusercontent\.com|https:\/\/script\.google\.com|http:\/\/(127\.0\.0\.1|localhost)(:\d+)?)$/;
+  window.addEventListener('message', function (e) {
+    if (!e || !ORIGINES.test(String(e.origin)) || !e.data || e.data.type !== 'mfidf:pret') return;
+    clearTimeout(delai);
+    ecran.hidden = true;
+  });
+  cadre.addEventListener('load', function () {
+    if (!cadre.src || cadre.src === 'about:blank') return;
+    texte.textContent = 'Ouverture…';
+  });
+  document.getElementById('reessayer').addEventListener('click', function () { location.reload(); });
+  cadre.src = WEB_APP + (q ? '?' + q : '');
 </script>
 </body>
 </html>
